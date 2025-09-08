@@ -1,5 +1,5 @@
 import { paidEmbedMany } from '@paid-ai/paid-node/vercel';
-import { getClient } from '../utils/client';
+import { getClient } from '../../utils/client';
 import { getEmbeddingModel, type ModelProvider } from '../utils/models';
 
 export async function POST(req: Request) {

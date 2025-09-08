@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { userStore } from '../userStore';
+import { userStore } from '../utils/userStore';
 import { LoginFormData, UserData } from '../types';
 
 interface AuthContextType {

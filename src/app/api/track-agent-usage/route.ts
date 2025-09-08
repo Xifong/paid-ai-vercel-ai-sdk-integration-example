@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getClient } from "../utils/client";
+import { getClient } from "../../utils/client";
 import { SignalData } from "@/app/types";
 
 async function signalWithTrace(usageData: SignalData) {

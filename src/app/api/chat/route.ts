@@ -1,5 +1,5 @@
 import { convertToModelMessages, UIMessage } from 'ai';
-import { getClient } from '../utils/client';
+import { getClient } from '../../utils/client';
 import { paidStreamText } from '@paid-ai/paid-node/vercel';
 import { getModel, type ModelProvider } from '../utils/models';
 

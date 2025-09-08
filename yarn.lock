@@ -3181,6 +3181,11 @@ lodash.camelcase@^4.3.0:
   resolved "https://registry.yarnpkg.com/lodash.camelcase/-/lodash.camelcase-4.3.0.tgz#b28aa6288a2b9fc651035c7711f65ab6190331a6"
   integrity sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA==
 
+lodash.clonedeep@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
+  integrity sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==
+
 lodash.merge@^4.6.2:
   version "4.6.2"
   resolved "https://registry.npmjs.org/lodash.merge/-/lodash.merge-4.6.2.tgz"
@@ -4442,6 +4447,13 @@ use-sync-external-store@^1.4.0:
   version "1.5.0"
   resolved "https://registry.npmjs.org/use-sync-external-store/-/use-sync-external-store-1.5.0.tgz"
   integrity sha512-Rb46I4cGGVBmjamjphe8L/UnvJD+uPPtTkNvX5mZgqdbavhI4EbgIWJiIHXJ8bc/i9EQGPRh4DwEURJ552Do0A==
+
+user-agents@^1.1.656:
+  version "1.1.656"
+  resolved "https://registry.yarnpkg.com/user-agents/-/user-agents-1.1.656.tgz#f82b469447b6c998316ec8099a3472a5376d0968"
+  integrity sha512-i+uWRpqcQ2JeiSlZA6NTS3NGcRPdKkI4N9I6uDleA/N/Fyuk8+wQBjF2WvcP8QY7wLH2PtU6uJ8GX3Jaw3q6kA==
+  dependencies:
+    lodash.clonedeep "^4.5.0"
 
 util-deprecate@^1.0.1:
   version "1.0.2"

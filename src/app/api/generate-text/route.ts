@@ -1,5 +1,5 @@
 import { paidGenerateText } from '@paid-ai/paid-node/vercel';
-import { getClient } from '../utils/client';
+import { getClient } from '../../utils/client';
 import { getModel, type ModelProvider } from '../utils/models';
 
 export async function POST(req: Request) {

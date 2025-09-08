@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/contexts/AuthContext';
-import { LoginFormData } from '../types';
+import { LoginFormData } from '@/app/types';
 
 export default function Login() {
   const [formData, setFormData] = useState<LoginFormData>({

@@ -1,4 +1,4 @@
-import { UserData } from "./types";
+import { UserData } from "../types";
 
 export interface User {
   id: string;

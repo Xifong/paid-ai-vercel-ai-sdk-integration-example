@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useAuth } from '@/app/contexts/AuthContext';
-import { userStore } from '../userStore';
+import { userStore } from '@/app/utils/userStore';
 
 const stripePromise = loadStripe('pk_test_51S2vuZ8wBPYbZq7jCxOkFwHVRN7wBnZaymul9w0uRaZgNlEE3GZg4XLYy0JrSqut1bxVJhKOEk4Cv49f3NmKYInl002Nm1h0lP');
 
@@ -117,11 +117,15 @@ export default function PaymentSetup() {
   const router = useRouter();
   const { isLoggedIn } = useAuth();
 
+  console.log('[PAYMENT] F1. PaymentSetup component rendered, isLoggedIn:', isLoggedIn);
+
   useEffect(() => {
     if (!isLoggedIn) {
+      console.log('[PAYMENT] F3. User not logged in, redirecting to sign-up');
       router.push('/sign-up');
       return;
     }
+    console.log('[PAYMENT] F4. User is logged in, staying on payment page');
   }, [isLoggedIn, router]);
 
   return (

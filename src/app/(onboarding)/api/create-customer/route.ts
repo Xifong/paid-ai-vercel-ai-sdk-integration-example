@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getClient } from '../utils/client';
 import { Paid } from '@paid-ai/paid-node';
 import { AGENT_ID } from '@/app/constants';
+import { getClient } from '@/app/utils/client';
 
 export async function POST(request: NextRequest) {
   try {

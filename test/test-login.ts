@@ -1,9 +1,12 @@
 import puppeteer from 'puppeteer';
+import UserAgent from 'user-agents';
 
 async function testLoginFlow() {
+  const userAgent = new UserAgent().toString();
+
   const browser = await puppeteer.launch({
     headless: false,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    args: [`--user-agent=${userAgent}`, '--no-sandbox', '--disable-setuid-sandbox']
   });
 
   const page = await browser.newPage();
@@ -35,11 +38,22 @@ async function testLoginFlow() {
     const signupUrl = page.url();
     console.log(`Sign-up successful! Redirected to: ${signupUrl}`);
 
-    // Step 4: Log out
-    console.log('\nStep 4: Log out (set logged_in to false)');
-    await page.evaluate(() => {
-      document.cookie = 'logged_in=false; path=/; max-age=31536000';
+    // Step 4: Log out using the logout API
+    console.log('\nStep 4: Log out using API endpoint');
+    const logoutResponse = await page.evaluate(async () => {
+      const response = await fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      return {
+        ok: response.ok,
+        status: response.status,
+        data: await response.json()
+      };
     });
+    console.log(`Logout response: ${JSON.stringify(logoutResponse)}`);
 
     // Step 5: Navigate to login page
     console.log('Step 5: Navigate to login page');
@@ -83,20 +97,28 @@ async function testLoginFlow() {
     const finalUrl = page.url();
     console.log(`Login successful! Redirected to: ${finalUrl}`);
 
-    // Step 8: Verify cookies
-    console.log('\nStep 8: Verify user is logged in');
+    // Step 8: Verify cookies and session
+    console.log('\nStep 8: Verify user is logged in with session token');
     const context = browser.defaultBrowserContext();
     const cookies = await context.cookies();
-    const loggedInCookie = cookies.find(c => c.name === 'logged_in');
-    const userNameCookie = cookies.find(c => c.name === 'user_name');
-    const userEmailCookie = cookies.find(c => c.name === 'user_email');
-    const userPasswordCookie = cookies.find(c => c.name === 'user_password');
+    const sessionTokenCookie = cookies.find(c => c.name === 'session_token');
+    const userStoreCookie = cookies.find(c => c.name === 'multi_user_store');
 
     console.log('Cookie verification:');
-    console.log(`  - logged_in: ${loggedInCookie?.value === 'true' ? 'PASS' : 'FAIL'}`);
-    console.log(`  - user_name: ${userNameCookie?.value === testName ? 'PASS' : 'FAIL'} (${userNameCookie?.value})`);
-    console.log(`  - user_email: ${userEmailCookie?.value === testEmail ? 'PASS' : 'FAIL'} (${userEmailCookie?.value})`);
-    console.log(`  - user_password stored: ${userPasswordCookie ? 'PASS' : 'FAIL'}`);
+    console.log(`  - session_token exists: ${sessionTokenCookie ? 'PASS' : 'FAIL'}`);
+    console.log(`  - multi_user_store exists: ${userStoreCookie ? 'PASS' : 'FAIL'}`);
+    
+    if (userStoreCookie) {
+      try {
+        const storeData = JSON.parse(decodeURIComponent(userStoreCookie.value));
+        const hasUser = storeData.users && storeData.users.length > 0;
+        const userMatch = storeData.users?.find((u: any) => u.email === testEmail && u.name === testName);
+        console.log(`  - User data stored: ${hasUser ? 'PASS' : 'FAIL'}`);
+        console.log(`  - User matches test data: ${userMatch ? 'PASS' : 'FAIL'}`);
+      } catch (e) {
+        console.log('  - Failed to parse user store data');
+      }
+    }
 
     console.log('\nLogin flow test completed successfully!');
 
