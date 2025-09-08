@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useAuth } from '@/app/contexts/AuthContext';
-import { setUserData } from '@/app/utils/cookies';
+import { userStore } from '../userStore';
 
 const stripePromise = loadStripe('pk_test_51S2vuZ8wBPYbZq7jCxOkFwHVRN7wBnZaymul9w0uRaZgNlEE3GZg4XLYy0JrSqut1bxVJhKOEk4Cv49f3NmKYInl002Nm1h0lP');
 
@@ -66,15 +66,12 @@ function PaymentFormContent() {
         const paidResponse = await response.json();
         console.log('Paid setup intent response:', paidResponse);
 
-        if (userData) {
-          const updatedUserData = {
-            ...userData,
-            confirmationTokenId: confirmationToken.id,
-            paymentProcessed: true
-          };
-          setUserData(updatedUserData);
-        }
+        const updatedUserData = {
+          confirmationTokenId: confirmationToken.id,
+          paymentProcessed: true
+        };
 
+        userStore.updateUser(userData.customerId, updatedUserData)
         router.push('/');
       }
     } catch (error) {
@@ -118,38 +115,33 @@ function PaymentFormContent() {
 
 export default function PaymentSetup() {
   const router = useRouter();
-  const { isLoggedIn, userData } = useAuth();
+  const { isLoggedIn } = useAuth();
 
   useEffect(() => {
-    if (!isLoggedIn || !userData) {
+    debugger;
+    if (!isLoggedIn) {
       router.push('/sign-up');
       return;
     }
-  }, [isLoggedIn, userData, router]);
+  }, [isLoggedIn, router]);
 
-  if (!userData) {
-    return <div>Loading...</div>;
-  }
+  <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+    <h1 className="text-2xl font-bold mb-8 text-center">Setup Payment</h1>
+    <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6 text-center">
+      Add a payment method to complete your account setup
+    </p>
 
-  return (
-    <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
-      <h1 className="text-2xl font-bold mb-8 text-center">Setup Payment</h1>
-      <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6 text-center">
-        Add a payment method to complete your account setup
-      </p>
-
-      <Elements
-        stripe={stripePromise}
-        options={{
-          appearance: {
-            theme: 'stripe',
-          },
-          mode: "setup",
-          currency: "usd",
-        }}
-      >
-        <PaymentFormContent />
-      </Elements>
-    </div>
-  );
+    <Elements
+      stripe={stripePromise}
+      options={{
+        appearance: {
+          theme: 'stripe',
+        },
+        mode: "setup",
+        currency: "usd",
+      }}
+    >
+      <PaymentFormContent />
+    </Elements>
+  </div>
 }

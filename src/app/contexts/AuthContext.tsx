@@ -1,12 +1,14 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getUserData, isLoggedIn as checkIsLoggedIn, setUserData as setUserDataCookies, setCookie, type UserData } from '@/app/utils/cookies';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { userStore } from '../userStore';
+import { LoginFormData, UserData } from '../types';
 
 interface AuthContextType {
   isLoggedIn: boolean;
   userData: UserData | null;
-  login: (userData: UserData) => void;
+  signup: (userData: UserData) => Promise<void>;
+  login: (userData: LoginFormData) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -25,36 +27,50 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData | null>(null);
 
-  useEffect(() => {
-    const loggedIn = checkIsLoggedIn();
-    const data = getUserData();
-
-    if (loggedIn && data) {
-      setIsLoggedIn(true);
-      setUserData(data);
-    } else {
-      setIsLoggedIn(false);
+  const setLoginState = useCallback(() => {
+    const user = userStore.getCurrentUser();
+    if (!user) {
+      setIsLoggedIn(false)
       setUserData(null);
+      return;
     }
+
+    setIsLoggedIn(true);
+    setUserData(userStore.userToUserData(user));
+  }, [setIsLoggedIn, setUserData, userStore])
+
+  useEffect(() => {
+    setLoginState();
   }, []);
 
-  const login = (userData: UserData) => {
-    setIsLoggedIn(true);
-    setUserData(userData);
-    setUserDataCookies(userData);
+  const signup = async (userData: UserData) => {
+    const user = await userStore.createUser(userData.email, userData.name, userData.password);
+    userStore.createSession(user.id);
+    setLoginState();
   };
 
+  const login = async (userData: LoginFormData) => {
+    const userAuth = await userStore.authenticateUser(userData.email, userData.password);
+    if (!userAuth) return false;
+    const user = userStore.getUserByEmail(userData.email);
+    if (!user) return false;
+    userStore.createSession(user.id);
+    setLoginState();
+    return true;
+  }
+
   const logout = () => {
-    setIsLoggedIn(false);
-    setUserData(null);
-    setCookie('logged_in', 'false', 31536000);
+    const sessionToken = userStore.getCurrentSessionToken();
+    if (!sessionToken) return;
+    userStore.deleteSession(sessionToken);
+    setLoginState();
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, userData, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, userData, signup, logout, login }}>
       {children}
     </AuthContext.Provider>
   );

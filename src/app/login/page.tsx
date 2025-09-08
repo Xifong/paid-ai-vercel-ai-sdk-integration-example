@@ -3,12 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/contexts/AuthContext';
-import { getUserData } from '@/app/utils/cookies';
-
-interface LoginFormData {
-  email: string;
-  password: string;
-}
+import { LoginFormData } from '../types';
 
 export default function Login() {
   const [formData, setFormData] = useState<LoginFormData>({
@@ -18,7 +13,7 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const { isLoggedIn, userData, login } = useAuth();
+  const { isLoggedIn, login } = useAuth();
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -27,12 +22,9 @@ export default function Login() {
   }, [isLoggedIn, router]);
 
   const handleLogin = async (formData: LoginFormData): Promise<void> => {
-    const userData = getUserData();
-    if (userData && userData.email === formData.email && userData.password === formData.password) {
-      login(userData);
-      router.push('/');
-    } else {
-      setError('Invalid email or password');
+    const loggedIn = await login(formData);
+    if (!loggedIn) {
+      setError('failed to login');
     }
   };
 
@@ -51,10 +43,6 @@ export default function Login() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const goToSignup = () => {
-    router.push('/sign-up');
   };
 
   return (
@@ -111,7 +99,7 @@ export default function Login() {
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           Don't have an account?{' '}
           <button
-            onClick={goToSignup}
+            onClick={() => router.push("/sign-up")}
             className="text-blue-600 hover:text-blue-700 underline"
           >
             Sign up

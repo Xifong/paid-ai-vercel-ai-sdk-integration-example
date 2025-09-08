@@ -5,7 +5,6 @@ import { AGENT_ID } from '@/app/constants';
 
 export async function POST(request: NextRequest) {
   try {
-    debugger;
     const { email, name } = await request.json();
 
     if (!email || !name) {

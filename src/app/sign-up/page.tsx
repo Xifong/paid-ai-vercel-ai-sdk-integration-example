@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/contexts/AuthContext';
-import { getCookie } from '@/app/utils/cookies';
 
 interface LoginFormData {
   name: string;
@@ -36,13 +35,11 @@ export default function Signup() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  const { login } = useAuth();
+  const { signup, isLoggedIn } = useAuth();
 
   useEffect(() => {
-    // Check if account already exists (cookie set)
-    const customerID = getCookie('customer_id');
-    if (customerID) {
-      router.push('/login');
+    if (isLoggedIn) {
+      router.push('/');
     }
   }, [router]);
 
@@ -55,7 +52,7 @@ export default function Signup() {
       password: formData.password
     };
 
-    login(userData);
+    await signup(userData);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
