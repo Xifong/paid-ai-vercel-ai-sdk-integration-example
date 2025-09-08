@@ -44,45 +44,31 @@ export default function Signup() {
   }, [router, isLoggedIn]);
 
   const handleSignup = async (formData: LoginFormData): Promise<void> => {
-    console.log('[SIGNUP] 1. Starting handleSignup', { email: formData.email, name: formData.name });
-
     const customerId = await createCustomer(formData.email, formData.name);
-    console.log('[SIGNUP] 2. Customer created', { customerId });
-
     const userData = {
       customerId,
       name: formData.name,
       email: formData.email,
       password: formData.password
     };
-    console.log('[SIGNUP] 3. UserData prepared', userData);
 
-    console.log('[SIGNUP] 4. Calling signup function');
     await signup(userData);
-    console.log('[SIGNUP] 5. Signup completed successfully');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('[SIGNUP] 6. Form submitted', formData);
 
     if (!formData.name.trim() || !formData.email.trim() || !formData.password.trim()) {
-      console.log('[SIGNUP] 7. Validation failed - empty fields');
       return;
     }
-    console.log('[SIGNUP] 8. Validation passed');
 
     setIsSubmitting(true);
-    console.log('[SIGNUP] 9. Set submitting to true');
-
+    
     try {
-      console.log('[SIGNUP] 10. Calling handleSignup');
       await handleSignup(formData);
-      console.log('[SIGNUP] 11. handleSignup completed, navigating to payment-setup');
       router.push('/payment-setup');
-      console.log('[SIGNUP] 12. Navigation initiated');
     } catch (error) {
-      console.error('[SIGNUP] ERROR in handleSubmit:', error);
+      console.error('Signup error:', error);
       setIsSubmitting(false);
     }
   };

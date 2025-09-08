@@ -117,15 +117,11 @@ export default function PaymentSetup() {
   const router = useRouter();
   const { isLoggedIn } = useAuth();
 
-  console.log('[PAYMENT] F1. PaymentSetup component rendered, isLoggedIn:', isLoggedIn);
-
   useEffect(() => {
     if (!isLoggedIn) {
-      console.log('[PAYMENT] F3. User not logged in, redirecting to sign-up');
       router.push('/sign-up');
       return;
     }
-    console.log('[PAYMENT] F4. User is logged in, staying on payment page');
   }, [isLoggedIn, router]);
 
   return (
