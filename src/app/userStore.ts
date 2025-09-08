@@ -96,7 +96,7 @@ class CookieBackedUserStore {
 
   async createUser(email: string, name: string, password: string): Promise<User> {
     console.log('[STORE] C1. createUser called', { email, name });
-    
+
     if (this.emailToUserId.has(email)) {
       console.log('[STORE] C2. User already exists, throwing error');
       throw new Error('User already exists');
@@ -118,7 +118,7 @@ class CookieBackedUserStore {
     this.users.set(userId, user);
     this.emailToUserId.set(email, userId);
     console.log('[STORE] C6. User added to maps');
-    
+
     this.saveToCookie();
     console.log('[STORE] C7. Cookie saved');
 
@@ -157,10 +157,10 @@ class CookieBackedUserStore {
 
   createSession(userId: string): Session {
     console.log('[STORE] D1. createSession called for userId:', userId);
-    
+
     const token = crypto.randomUUID();
     console.log('[STORE] D2. Generated session token:', token);
-    
+
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
     console.log('[STORE] D3. Session expires at:', expiresAt);
 
@@ -173,13 +173,13 @@ class CookieBackedUserStore {
 
     this.sessions.set(token, session);
     console.log('[STORE] D5. Session added to map');
-    
+
     this.saveToCookie();
     console.log('[STORE] D6. Cookie saved');
-    
+
     this.setCurrentSessionToken(token);
     console.log('[STORE] D7. Current session token set');
-    
+
     return session;
   }
 
@@ -198,6 +198,7 @@ class CookieBackedUserStore {
 
   deleteSession(token: string): void {
     this.sessions.delete(token);
+    this.clearCurrentSessionToken();
     this.saveToCookie();
   }
 
@@ -255,15 +256,25 @@ class CookieBackedUserStore {
     console.log('[STORE] E1. getCurrentUser called');
     const sessionToken = this.getCurrentSessionToken();
     console.log('[STORE] E2. Current session token:', sessionToken);
-    
+
     if (!sessionToken) {
       console.log('[STORE] E3. No session token found');
       return null;
     }
-    
+
     const user = this.getUserBySession(sessionToken);
     console.log('[STORE] E4. User from session:', user);
     return user;
+  }
+
+  deleteUser(userID: string): void {
+    this.users.delete(userID);
+    const userSessions = this.sessions.values().filter((session) => session.userId === userID).toArray();
+    if (!userSessions) return;
+    for (const session of userSessions) {
+      this.deleteSession(session.token);
+    }
+    this.saveToCookie();
   }
 }
 

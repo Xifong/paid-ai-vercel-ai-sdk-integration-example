@@ -41,7 +41,7 @@ export default function Chat() {
     }
   });
   const [input, setInput] = useState('');
-  const { logout, userData } = useAuth();
+  const { logout, userData, deleteCurrentUser } = useAuth();
   const router = useRouter();
 
   return (
@@ -61,6 +61,14 @@ export default function Chat() {
             className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
           >
             Logout
+          </button>
+          <button
+            onClick={
+              () => { deleteCurrentUser(); router.push("/") }
+            }
+            className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Delete current user
           </button>
         </div>
       </div>

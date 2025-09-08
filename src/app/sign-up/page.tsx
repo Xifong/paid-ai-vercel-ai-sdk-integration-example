@@ -41,14 +41,14 @@ export default function Signup() {
     if (isLoggedIn) {
       router.push('/');
     }
-  }, [router]);
+  }, [router, isLoggedIn]);
 
   const handleSignup = async (formData: LoginFormData): Promise<void> => {
     console.log('[SIGNUP] 1. Starting handleSignup', { email: formData.email, name: formData.name });
-    
+
     const customerId = await createCustomer(formData.email, formData.name);
     console.log('[SIGNUP] 2. Customer created', { customerId });
-    
+
     const userData = {
       customerId,
       name: formData.name,
@@ -74,7 +74,7 @@ export default function Signup() {
 
     setIsSubmitting(true);
     console.log('[SIGNUP] 9. Set submitting to true');
-    
+
     try {
       console.log('[SIGNUP] 10. Calling handleSignup');
       await handleSignup(formData);
