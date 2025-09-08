@@ -7,7 +7,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { setUserData } from '@/app/utils/cookies';
 
-const stripePromise = loadStripe('pk_test_51S2vuZ8wBPYbZq7jCxOkFwHVRN7wBnZaymul9w0uRaZgNlEE3GZg4XLYy0JrSqut1bxVJhKOEk4Cv49f3NmKYInl002Nm1h0lP');
+const stripePromise = loadStripe('pk_live_51QpXL3P3mUFqVxY215CNhe2sWJYtfj4TX9lr6KGSORKzj0B3W9lOUMGFXcMwV7Kvc5r8WGjwuLtYWK4Zz6paNbUd00DISUGW6G');
 
 function PaymentFormContent() {
   const stripe = useStripe();
@@ -66,6 +66,20 @@ function PaymentFormContent() {
         const paidResponse = await response.json();
         console.log('Paid setup intent response:', paidResponse);
 
+
+        const si = paidResponse?.data?.setup_intent;
+        if (si?.status === 'requires_action') {
+          const { error: nextErr } = await stripe.handleNextAction({
+            clientSecret: si.client_secret,
+          });
+          if (nextErr) {
+            setError(nextErr.message || 'Authentication failed');
+            setIsProcessing(false);
+            return;
+          }
+        }
+
+
         if (userData) {
           const updatedUserData = {
             ...userData,
@@ -75,7 +89,7 @@ function PaymentFormContent() {
           setUserData(updatedUserData);
         }
 
-        router.push('/');
+        //router.push('/');
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Payment setup failed');

@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await fetch(`${PAID_API_URL}/api/organizations/${PAID_ORG_ID}/payments/setup-intents`, {
+    const response = await fetch(`https://api.agentpaid.io/api/organizations/${PAID_ORG_ID}/payments/setup-intents`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${PAID_API_KEY}`,
@@ -32,7 +32,8 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         customerId,
         confirmationToken,
-        metadata: metadata || {}
+        metadata: metadata || {},
+        returnUrl: 'https://paid.ai/blog',
       }),
     });
 
