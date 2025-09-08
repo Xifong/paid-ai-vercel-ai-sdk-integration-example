@@ -9,11 +9,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const isLoggedIn = request.cookies.get('logged_in')?.value === 'true';
-  const customerID = request.cookies.get('customer_id')?.value;
+  const sessionToken = request.cookies.get('session_token')?.value;
+  const userStore = request.cookies.get('multi_user_store')?.value;
 
-  if (!isLoggedIn) {
-    const redirectPath = customerID ? '/login' : '/sign-up';
+  if (!sessionToken) {
+    // If user store exists, they may have an account so redirect to login
+    // Otherwise redirect to sign-up
+    const redirectPath = userStore ? '/login' : '/sign-up';
     return NextResponse.redirect(new URL(redirectPath, request.url));
   }
 

@@ -117,31 +117,36 @@ export default function PaymentSetup() {
   const router = useRouter();
   const { isLoggedIn } = useAuth();
 
+  console.log('[PAYMENT] F1. PaymentSetup component rendered, isLoggedIn:', isLoggedIn);
+
   useEffect(() => {
-    debugger;
     if (!isLoggedIn) {
+      console.log('[PAYMENT] F3. User not logged in, redirecting to sign-up');
       router.push('/sign-up');
       return;
     }
+    console.log('[PAYMENT] F4. User is logged in, staying on payment page');
   }, [isLoggedIn, router]);
 
-  <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
-    <h1 className="text-2xl font-bold mb-8 text-center">Setup Payment</h1>
-    <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6 text-center">
-      Add a payment method to complete your account setup
-    </p>
+  return (
+    <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+      <h1 className="text-2xl font-bold mb-8 text-center">Setup Payment</h1>
+      <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6 text-center">
+        Add a payment method to complete your account setup
+      </p>
 
-    <Elements
-      stripe={stripePromise}
-      options={{
-        appearance: {
-          theme: 'stripe',
-        },
-        mode: "setup",
-        currency: "usd",
-      }}
-    >
-      <PaymentFormContent />
-    </Elements>
-  </div>
+      <Elements
+        stripe={stripePromise}
+        options={{
+          appearance: {
+            theme: 'stripe',
+          },
+          mode: "setup",
+          currency: "usd",
+        }}
+      >
+        <PaymentFormContent />
+      </Elements>
+    </div>
+  );
 }
