@@ -10,10 +10,10 @@ export function middleware(request: NextRequest) {
   }
 
   const isLoggedIn = request.cookies.get('logged_in')?.value === 'true';
-  const stripeCustomerId = request.cookies.get('stripe_customer_id')?.value;
+  const customerID = request.cookies.get('customer_id')?.value;
 
   if (!isLoggedIn) {
-    const redirectPath = stripeCustomerId ? '/login' : '/sign-up';
+    const redirectPath = customerID ? '/login' : '/sign-up';
     return NextResponse.redirect(new URL(redirectPath, request.url));
   }
 

@@ -8,6 +8,7 @@ import { getCookie } from '@/app/utils/cookies';
 interface LoginFormData {
   name: string;
   email: string;
+  password: string;
 }
 
 const createCustomer = async (email: string, name: string) => {
@@ -30,7 +31,8 @@ const createCustomer = async (email: string, name: string) => {
 export default function Signup() {
   const [formData, setFormData] = useState<LoginFormData>({
     name: '',
-    email: ''
+    email: '',
+    password: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
@@ -38,8 +40,8 @@ export default function Signup() {
 
   useEffect(() => {
     // Check if account already exists (cookie set)
-    const stripeCustomerId = getCookie('stripe_customer_id');
-    if (stripeCustomerId) {
+    const customerID = getCookie('customer_id');
+    if (customerID) {
       router.push('/login');
     }
   }, [router]);
@@ -49,7 +51,8 @@ export default function Signup() {
     const userData = {
       customerId,
       name: formData.name,
-      email: formData.email
+      email: formData.email,
+      password: formData.password
     };
 
     login(userData);
@@ -58,7 +61,7 @@ export default function Signup() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name.trim() || !formData.email.trim()) {
+    if (!formData.name.trim() || !formData.email.trim() || !formData.password.trim()) {
       return;
     }
 
@@ -102,9 +105,24 @@ export default function Signup() {
           />
         </div>
 
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium mb-2">
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            value={formData.password}
+            onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
+            className="w-full p-2 border border-zinc-300 dark:border-zinc-800 rounded dark:bg-zinc-900"
+            placeholder="Enter your password"
+            required
+          />
+        </div>
+
         <button
           type="submit"
-          disabled={isSubmitting || !formData.name.trim() || !formData.email.trim()}
+          disabled={isSubmitting || !formData.name.trim() || !formData.email.trim() || !formData.password.trim()}
           className="w-full p-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? 'Signing up...' : 'Sign Up'}

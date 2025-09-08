@@ -7,13 +7,16 @@ import { getUserData } from '@/app/utils/cookies';
 
 interface LoginFormData {
   email: string;
+  password: string;
 }
 
 export default function Login() {
   const [formData, setFormData] = useState<LoginFormData>({
-    email: ''
+    email: '',
+    password: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { isLoggedIn, userData, login } = useAuth();
 
@@ -25,18 +28,22 @@ export default function Login() {
 
   const handleLogin = async (formData: LoginFormData): Promise<void> => {
     const userData = getUserData();
-    if (userData && userData.email === formData.email) {
+    if (userData && userData.email === formData.email && userData.password === formData.password) {
       login(userData);
       router.push('/');
+    } else {
+      setError('Invalid email or password');
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.email.trim()) {
+    if (!formData.email.trim() || !formData.password.trim()) {
       return;
     }
+
+    setError(null);
 
     setIsSubmitting(true);
     try {
@@ -70,9 +77,30 @@ export default function Login() {
           />
         </div>
 
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium mb-2">
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            value={formData.password}
+            onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
+            className="w-full p-2 border border-zinc-300 dark:border-zinc-800 rounded dark:bg-zinc-900"
+            placeholder="Enter your password"
+            required
+          />
+        </div>
+
+        {error && (
+          <div className="text-red-600 text-sm">
+            {error}
+          </div>
+        )}
+
         <button
           type="submit"
-          disabled={isSubmitting || !formData.email.trim()}
+          disabled={isSubmitting || !formData.email.trim() || !formData.password.trim()}
           className="w-full p-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? 'Logging in...' : 'Login'}
