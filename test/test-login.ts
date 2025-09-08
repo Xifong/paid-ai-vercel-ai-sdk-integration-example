@@ -15,62 +15,75 @@ async function testLoginFlow() {
   try {
     console.log('Starting login flow test...');
 
+    // Step 1: Navigate to sign-up page
     console.log('\nStep 1: Navigate to sign-up page');
     await page.goto('http://localhost:3847/sign-up', { waitUntil: 'networkidle2' });
 
+    // Step 2: Fill sign-up form using locators
     console.log('Step 2: Fill out sign-up form');
-    await page.type('#name', testName);
-    await page.type('#email', testEmail);
-    await page.type('#password', testPassword);
+    await page.locator('#name').fill(testName);
+    await page.locator('#email').fill(testEmail);
+    await page.locator('#password').fill(testPassword);
 
+    // Step 3: Submit sign-up form
     console.log('Step 3: Submit sign-up form');
-    await page.click('button[type="submit"]');
-
-    await page.waitForNavigation({ waitUntil: 'networkidle2' });
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'networkidle2' }),
+      page.locator('button[type="submit"]').click()
+    ]);
 
     const signupUrl = page.url();
     console.log(`Sign-up successful! Redirected to: ${signupUrl}`);
 
+    // Step 4: Log out
     console.log('\nStep 4: Log out (set logged_in to false)');
     await page.evaluate(() => {
       document.cookie = 'logged_in=false; path=/; max-age=31536000';
     });
 
+    // Step 5: Navigate to login page
     console.log('Step 5: Navigate to login page');
     await page.goto('http://localhost:3847/login', { waitUntil: 'networkidle2' });
 
+    // Step 6: Test wrong password
     console.log('Step 6: Attempt login with wrong password');
-    await page.type('#email', testEmail);
-    await page.type('#password', 'WrongPassword');
-    await page.click('button[type="submit"]');
-
-    const errorElement = await page.$('.text-red-600');
-    if (errorElement) {
-      const errorText = await page.evaluate(el => el.textContent, errorElement);
-      console.log(`Error shown for wrong password: "${errorText}"`);
-    } else {
-      console.log('No error message shown for wrong password');
-    }
-
-    console.log('\nStep 7: Clear form and login with correct password');
-    await page.reload({ waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#email', { visible: true });
-    await page.evaluate(() => {
-      const emailInput = document.querySelector('#email') as HTMLInputElement;
-      const passwordInput = document.querySelector('#password') as HTMLInputElement;
-      if (emailInput) emailInput.value = '';
-      if (passwordInput) passwordInput.value = '';
-    });
-
     await page.locator('#email').fill(testEmail);
-    await page.locator('#password').fill(testPassword);
+    await page.locator('#password').fill('WrongPassword');
     await page.locator('button[type="submit"]').click();
 
-    await page.waitForNavigation({ waitUntil: 'networkidle2' });
+    // Wait for error message
+    await page.waitForSelector('.text-red-600', { visible: true, timeout: 5000 })
+      .then(async (errorElement) => {
+        const errorText = await errorElement?.evaluate(el => el.textContent);
+        console.log(`Error shown for wrong password: "${errorText}"`);
+      })
+      .catch(() => {
+        console.log('No error message shown for wrong password');
+      });
+
+    // Step 7: Clear and login with correct password
+    console.log('\nStep 7: Clear form and login with correct password');
+    await page.reload({ waitUntil: 'networkidle0' });
+
+    // Wait for form to be ready and clear inputs
+    await page.waitForSelector('#email', { visible: true });
+    await page.locator('#email').fill('');
+    await page.locator('#password').fill('');
+
+    // Fill with correct credentials
+    await page.locator('#email').fill(testEmail);
+    await page.locator('#password').fill(testPassword);
+
+    // Submit and wait for navigation
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'networkidle2' }),
+      page.locator('button[type="submit"]').click()
+    ]);
 
     const finalUrl = page.url();
     console.log(`Login successful! Redirected to: ${finalUrl}`);
 
+    // Step 8: Verify cookies
     console.log('\nStep 8: Verify user is logged in');
     const context = browser.defaultBrowserContext();
     const cookies = await context.cookies();
