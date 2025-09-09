@@ -24,17 +24,23 @@ export async function POST(request: NextRequest) {
 
     const customerID = crypto.randomUUID();
 
-    const customer = await paidClient.customers.create({
-      name: name,
-      externalId: customerID,
-      billingAddress: {
-        line1: '123 Main St',
-        city: 'San Francisco',
-        state: 'CA',
-        zipCode: '94105',
-        country: 'USA'
-      }
-    });
+    let customer;
+    try {
+      customer = await paidClient.customers.create({
+        name: name,
+        externalId: customerID,
+        billingAddress: {
+          line1: '123 Main St',
+          city: 'San Francisco',
+          state: 'CA',
+          zipCode: '94105',
+          country: 'USA'
+        }
+      });
+    } catch (error) {
+      console.error('Error creating customer:', error);
+      throw error;
+    }
 
     const contact = await paidClient.contacts.create({
       customerExternalId: customerID,
@@ -44,8 +50,8 @@ export async function POST(request: NextRequest) {
       email: email,
       billingStreet: '123 Main St',
       billingCity: 'San Francisco',
-      billingCountry: 'USA',
-      billingPostalCode: '94105'
+      billingCountry: 'US',
+      billingPostalCode: '94105',
     });
 
     if (contact.id === undefined) {
@@ -66,7 +72,7 @@ export async function POST(request: NextRequest) {
       }]
     });
 
-    return NextResponse.json({ customerId: customerID });
+    return NextResponse.json({ customerId: customer.id });
   } catch (error) {
     console.error('Error creating customer:', error);
     return NextResponse.json(

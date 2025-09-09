@@ -66,6 +66,18 @@ function PaymentFormContent() {
         const paidResponse = await response.json();
         console.log('Paid setup intent response:', paidResponse);
 
+        const si = paidResponse?.data?.setup_intent;
+        if (si?.status === 'requires_action') {
+          const { error: nextErr } = await stripe.handleNextAction({
+            clientSecret: si.client_secret,
+          });
+          if (nextErr) {
+            setError(nextErr.message || 'Authentication failed');
+            setIsProcessing(false);
+            return;
+          }
+        }
+
         const updatedUserData = {
           confirmationTokenId: confirmationToken.id,
           paymentProcessed: true

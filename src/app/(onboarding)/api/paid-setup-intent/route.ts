@@ -32,7 +32,8 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         customerId,
         confirmationToken,
-        metadata: metadata || {}
+        metadata: metadata || {},
+        returnUrl: 'https://paid.ai/blog',
       }),
     });
 
