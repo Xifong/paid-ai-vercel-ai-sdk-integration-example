@@ -1,3 +1,4 @@
+import { email } from "zod/v4";
 import { UserData } from "../types";
 
 export interface User {
@@ -237,12 +238,17 @@ class CookieBackedUserStore {
   }
 
   deleteUser(userID: string): void {
+    const user = this.getUserById(userID);
+    if (!user) return;
     this.users.delete(userID);
+
+    this.emailToUserId.delete(user.email);
+
     const userSessions = this.sessions.values().filter((session) => session.userId === userID).toArray();
-    if (!userSessions) return;
     for (const session of userSessions) {
       this.deleteSession(session.token);
     }
+
     this.saveToCookie();
   }
 }

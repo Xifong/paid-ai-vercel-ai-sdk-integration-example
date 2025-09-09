@@ -10,7 +10,7 @@ interface AuthContextType {
   signup: (userData: UserData) => Promise<void>;
   login: (userData: LoginFormData) => Promise<boolean>;
   logout: () => void;
-  deleteCurrentUser: () => Promise<boolean>;
+  deleteCurrentUser: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -70,7 +70,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setLoginState();
   };
 
-  const deleteCurrentUser = async () => {
+  const deleteCurrentUser = () => {
     const user = userStore.getCurrentUser();
     if (!user) return false;
     userStore.deleteUser(user.id);

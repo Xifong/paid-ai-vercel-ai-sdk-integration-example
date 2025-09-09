@@ -41,7 +41,7 @@ export default function Signup() {
     if (isLoggedIn) {
       router.push('/');
     }
-  }, [router, isLoggedIn]);
+  }, []);
 
   const handleSignup = async (formData: LoginFormData): Promise<void> => {
     const customerId = await createCustomer(formData.email, formData.name);
@@ -63,7 +63,7 @@ export default function Signup() {
     }
 
     setIsSubmitting(true);
-    
+
     try {
       await handleSignup(formData);
       router.push('/payment-setup');
