@@ -1,5 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+/**
+ * Paid.ai Payment Setup Intent API Route
+ * 
+ * This route handles the server-side payment setup with Paid.ai.
+ * It must run on the server to protect API credentials.
+ * 
+ * Required Environment Variables:
+ * - PAID_API_KEY: Your Paid.ai API key (keep secret)
+ * - PAID_API_URL: Paid.ai API URL (usually https://api.paid.ai)
+ * - PAID_ORG_ID: Your Paid.ai organization ID
+ * 
+ * Copy this route to your Next.js app at:
+ * src/app/api/paid-setup-intent/route.ts
+ */
+
 const PAID_API_URL = process.env.PAID_API_URL;
 const PAID_API_KEY = process.env.PAID_API_KEY;
 const PAID_ORG_ID = process.env.PAID_ORG_ID;
