@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { userStore } from '@/app/utils/userStore';
-import { PaymentSetupPage } from './components/payment-setup-page';
-import { PaymentResult, UserUpdates } from './types';
+import { PaymentSetupPage } from '../components/payment-setup-page';
+import { PaymentResult, UserUpdates } from '../types';
 
 const STRIPE_PUBLISHABLE_KEY = 'pk_test_51S2vuZ8wBPYbZq7jCxOkFwHVRN7wBnZaymul9w0uRaZgNlEE3GZg4XLYy0JrSqut1bxVJhKOEk4Cv49f3NmKYInl002Nm1h0lP';
 

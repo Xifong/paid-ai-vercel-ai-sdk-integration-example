@@ -48,7 +48,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const signup = async (userData: UserData) => {
-    const user = await userStore.createUser(userData.email, userData.name, userData.password);
+    const user = await userStore.createUser(userData.customerId, userData.email, userData.name, userData.password);
     userStore.createSession(user.id);
     setLoginState();
   };

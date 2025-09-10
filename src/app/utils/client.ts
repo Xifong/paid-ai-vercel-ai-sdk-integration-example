@@ -1,4 +1,5 @@
 import { PaidClient } from "@paid-ai/paid-node";
+import { PAID_API_URL } from "../constants";
 
 let client: PaidClient | null = null;
 let isInitialized: boolean = false;
@@ -12,7 +13,7 @@ export async function getClient(): Promise<PaidClient> {
 
   if (!client) {
     try {
-      client = new PaidClient({ token: apiToken });
+      client = new PaidClient({ token: apiToken, baseUrl: `${PAID_API_URL}/api/v1/` });
     } catch (error) {
       console.error('Failed to initialize PaidClient:', error);
       throw new Error('PaidClient initialization failed');

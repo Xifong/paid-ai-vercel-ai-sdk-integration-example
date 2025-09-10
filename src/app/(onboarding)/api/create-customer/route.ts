@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Paid } from '@paid-ai/paid-node';
-import { AGENT_ID } from '@/app/constants';
+import { PAID_AGENT_ID } from '@/app/constants';
 import { getClient } from '@/app/utils/client';
 
 export async function POST(request: NextRequest) {
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       endDate: '2026-05-31',
       currency: 'USD',
       orderLines: [{
-        agentExternalId: AGENT_ID,
+        agentExternalId: PAID_AGENT_ID,
       }]
     });
 

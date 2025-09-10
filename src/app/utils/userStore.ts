@@ -95,23 +95,21 @@ class CookieBackedUserStore {
     document.cookie = `${name}=${value}; path=/; max-age=${maxAge}`;
   }
 
-  async createUser(email: string, name: string, password: string): Promise<User> {
+  async createUser(customerId: string, email: string, name: string, password: string): Promise<User> {
     if (this.emailToUserId.has(email)) {
       throw new Error('User already exists');
     }
 
-    const userId = crypto.randomUUID();
-
     const user: User = {
-      id: userId,
+      id: customerId,
       email,
       name,
       password,
       createdAt: new Date().toISOString(),
     };
 
-    this.users.set(userId, user);
-    this.emailToUserId.set(email, userId);
+    this.users.set(customerId, user);
+    this.emailToUserId.set(email, customerId);
     this.saveToCookie();
 
     return user;

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const PAID_API_URL = process.env.PAID_API_URL;
+const PAID_API_URL = process.env.PAID_API_URL || "https://api.agentpaid.io"
 const PAID_API_KEY = process.env.PAID_API_KEY;
-const PAID_ORG_ID = process.env.PAID_ORG_ID;
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,7 +22,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await fetch(`${PAID_API_URL}/api/organizations/${PAID_ORG_ID}/payments/setup-intents`, {
+    const orgResponse = await fetch(`${PAID_API_URL}/api/organizations/organizationId`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${PAID_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!orgResponse.ok) {
+      const errorText = await orgResponse.text();
+      console.error('Failed to get orgId:', errorText);
+      return NextResponse.json(
+        { error: 'Failed to create setup intent with Paid' },
+        { status: orgResponse.status }
+      );
+    }
+
+    const orgId = await orgResponse.json();
+
+    const response = await fetch(`${PAID_API_URL}/api/organizations/${orgId.data.organizationId}/payments/setup-intents`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${PAID_API_KEY}`,
