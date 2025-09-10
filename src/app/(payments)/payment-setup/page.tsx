@@ -3,8 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { userStore } from '@/app/utils/userStore';
+import { PaymentResult } from '../types';
 import { PaymentSetupPage } from '../components/payment-setup-page';
-import { PaymentResult, UserUpdates } from '../types';
+import { useEffect } from 'react';
 
 const STRIPE_PUBLISHABLE_KEY = 'pk_live_51S2vuU6VZ0JAwqpDJUwAOC5fbyQo4S2axB986wbh2V9zZym2WqkraGVwhNdTFkbMtrNPt8j8oXrVAKqCqzeZlzOM00ONr4knZ6';
 
@@ -13,6 +14,11 @@ export default function PaymentSetup() {
   const { isLoggedIn, userData } = useAuth();
 
   const handleSuccess = (result: PaymentResult) => {
+    if (!userData) return;
+    userStore.updateUser(userData?.customerId, {
+      "confirmationTokenId": result.confirmationToken,
+      "paymentProcessed": true,
+    });
     console.log('Payment setup successful:', result);
     router.push('/');
   };
@@ -21,27 +27,19 @@ export default function PaymentSetup() {
     console.error('Payment setup error:', error);
   };
 
-  const handleUserUpdate = (customerId: string, updates: UserUpdates) => {
-    userStore.updateUser(customerId, updates);
-  };
-
-  const handleUnauthenticated = () => {
-    router.push('/sign-up');
-  };
+  useEffect(() => {
+    if (!userData) {
+      router.push('/sign-up');
+    }
+  }, [userData]);
 
   return (
-    isLoggedIn &&
+    isLoggedIn && userData &&
     <PaymentSetupPage
-      customer={userData ? {
-        customerId: userData.customerId,
-        email: userData.email,
-        name: userData.name,
-      } : undefined}
+      customerID={userData.customerId}
       stripePublishableKey={STRIPE_PUBLISHABLE_KEY}
       onSuccess={handleSuccess}
       onError={handleError}
-      onUserUpdate={handleUserUpdate}
-      onUnauthenticated={handleUnauthenticated}
     />
   );
 }

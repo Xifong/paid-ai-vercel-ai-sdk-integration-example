@@ -1,18 +1,31 @@
 import { useState, useCallback } from 'react';
 import {
-  UsePaymentSetupOptions,
-  UsePaymentSetupResult,
   PaymentResult,
-  PaymentSetupState,
-  UserUpdates
 } from '../types';
+
+type PaymentSetupState = {
+  isProcessing: boolean;
+  error: string | null;
+  isComplete: boolean;
+}
+
+type UsePaymentSetupOptions = {
+  customerID: string;
+  onSuccess?: (result: PaymentResult) => void;
+  onError?: (error: string) => void;
+}
+
+type UsePaymentSetupResult = {
+  state: PaymentSetupState;
+  setupPayment: (stripe: any, elements: any) => Promise<void>;
+  resetError: () => void;
+}
 
 export function usePaymentSetup(options: UsePaymentSetupOptions): UsePaymentSetupResult {
   const {
-    customer,
+    customerID,
     onSuccess,
     onError,
-    onUserUpdate
   } = options;
 
   const [state, setState] = useState<PaymentSetupState>({
@@ -26,7 +39,7 @@ export function usePaymentSetup(options: UsePaymentSetupOptions): UsePaymentSetu
   }, []);
 
   const setupPayment = useCallback(async (stripe: any, elements: any) => {
-    if (!stripe || !elements || !customer) {
+    if (!stripe || !elements || !customerID) {
       return;
     }
 
@@ -50,21 +63,14 @@ export function usePaymentSetup(options: UsePaymentSetupOptions): UsePaymentSetu
         throw new Error('No confirmation token received');
       }
 
-      console.log('Confirmation token created:', confirmationToken.id);
-
-
       const response = await fetch(`/api/paid-setup-intent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          customerId: customer.customerId,
+          customerId: customerID,
           confirmationToken: confirmationToken.id,
-          metadata: {
-            email: customer.email,
-            name: customer.name,
-          }
         }),
       });
 
@@ -73,7 +79,6 @@ export function usePaymentSetup(options: UsePaymentSetupOptions): UsePaymentSetu
       }
 
       const paidResponse = await response.json();
-      console.log('Paid setup intent response:', paidResponse);
 
       const si = paidResponse?.data?.setup_intent;
       let finalStatus = si?.status || 'succeeded';
@@ -94,22 +99,11 @@ export function usePaymentSetup(options: UsePaymentSetupOptions): UsePaymentSetu
         setupIntentClientSecret: si?.client_secret,
       };
 
-      const userUpdates: UserUpdates = {
-        confirmationTokenId: confirmationToken.id,
-        paymentProcessed: true
-      };
-
       setState(prev => ({ ...prev, isProcessing: false, isComplete: true }));
-
-      // Call callbacks
-      if (onUserUpdate) {
-        onUserUpdate(customer.customerId, userUpdates);
-      }
 
       if (onSuccess) {
         onSuccess(result);
       }
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Payment setup failed';
       setState(prev => ({
@@ -123,7 +117,7 @@ export function usePaymentSetup(options: UsePaymentSetupOptions): UsePaymentSetu
         onError(errorMessage);
       }
     }
-  }, [customer, onSuccess, onError, onUserUpdate]);
+  }, [customerID, onSuccess, onError]);
 
   return {
     state,
