@@ -3,15 +3,17 @@
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { userStore } from '@/app/utils/userStore';
-import { PaymentResult } from '../types';
-import { PaymentSetupPage } from '../components/payment-setup-page';
+import { PaymentResult } from '../core/types';
 import { useEffect } from 'react';
+import { PaymentSetupPage } from '../core/payment-setup-page';
+import { StripeProvider } from '../payment-providers/stripe';
 
 const STRIPE_PUBLISHABLE_KEY = 'pk_live_51S2vuU6VZ0JAwqpDJUwAOC5fbyQo4S2axB986wbh2V9zZym2WqkraGVwhNdTFkbMtrNPt8j8oXrVAKqCqzeZlzOM00ONr4knZ6';
 
 export default function PaymentSetup() {
   const router = useRouter();
   const { isLoggedIn, userData } = useAuth();
+  const provider = new StripeProvider();
 
   const handleSuccess = (result: PaymentResult) => {
     if (!userData) return;
@@ -37,7 +39,9 @@ export default function PaymentSetup() {
     isLoggedIn && userData &&
     <PaymentSetupPage
       customerID={userData.customerId}
-      stripePublishableKey={STRIPE_PUBLISHABLE_KEY}
+      publishableKey={STRIPE_PUBLISHABLE_KEY}
+      provider={provider}
+      apiEndpoint="/api/paid-setup-intent"
       onSuccess={handleSuccess}
       onError={handleError}
     />

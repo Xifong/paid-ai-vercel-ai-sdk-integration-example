@@ -1,7 +1,8 @@
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
-import { usePaymentSetup } from '../hooks/use-payment-setup';
-import { PaymentResult } from '../types';
+import React from 'react';
+import { PaymentResult } from './types';
+import { PaymentProvider } from './payment-provider';
+import { PaymentProviderContextProvider, usePaymentElements, usePaymentProvider } from './payment-context';
+import { usePaymentSetup } from './use-payment-setup';
 
 type PaymentSetupConfig = {
   onSuccess?: (result: PaymentResult) => void;
@@ -10,29 +11,36 @@ type PaymentSetupConfig = {
 
 type PaymentSetupFormProps = {
   customerID: string;
-  stripePublishableKey: string;
+  provider: PaymentProvider;
+  publishableKey: string;
+  apiEndpoint: string;
   handlers?: PaymentSetupConfig;
   className?: string;
 }
 
 type PaymentSetupPageProps = {
   customerID: string;
-  stripePublishableKey: string;
+  provider: PaymentProvider;
+  publishableKey: string;
+  apiEndpoint: string;
   onSuccess?: (result: PaymentResult) => void;
   onError?: (error: string) => void;
 }
 
-
 function PaymentFormContent({
   customerID,
+  provider,
+  apiEndpoint,
   handlers = {},
   className = "",
-}: Omit<PaymentSetupFormProps, 'stripePublishableKey'>) {
-  const stripe = useStripe();
-  const elements = useElements();
+}: Omit<PaymentSetupFormProps, 'publishableKey'>) {
+  const paymentProvider = usePaymentProvider();
+  const elements = usePaymentElements();
 
   const { state, setupPayment, resetError } = usePaymentSetup({
     customerID,
+    provider,
+    apiEndpoint,
     onSuccess: handlers.onSuccess,
     onError: handlers.onError,
   });
@@ -40,12 +48,14 @@ function PaymentFormContent({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!stripe || !elements) {
+    if (!paymentProvider || !elements) {
       return;
     }
 
-    await setupPayment(stripe, elements);
+    await setupPayment(paymentProvider, elements);
   };
+
+  const { PaymentElement } = provider.getComponents();
 
   return (
     <form onSubmit={handleSubmit} className={`space-y-4 ${className}`}>
@@ -80,7 +90,7 @@ function PaymentFormContent({
 
       <button
         type="submit"
-        disabled={!stripe || state.isProcessing}
+        disabled={!paymentProvider || state.isProcessing}
         className="w-full p-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {state.isProcessing ? 'Processing...' : 'Save Payment Method'}
@@ -91,33 +101,44 @@ function PaymentFormContent({
 
 export function PaymentSetupForm({
   customerID,
-  stripePublishableKey,
+  provider,
+  publishableKey,
+  apiEndpoint,
   handlers = {},
 }: PaymentSetupFormProps) {
-  const stripePromise = loadStripe(stripePublishableKey);
+  const [providerInstance, setProviderInstance] = React.useState<any>(null);
+  const { Elements } = provider.getComponents();
+
+  React.useEffect(() => {
+    provider.initialize(publishableKey).then(setProviderInstance);
+  }, [provider, publishableKey]);
+
+  if (!providerInstance) {
+    return <div>Loading payment provider...</div>;
+  }
 
   return (
-    <Elements
-      stripe={stripePromise}
-      options={{
-        appearance: {
-          theme: 'stripe',
-        },
-        mode: "setup",
-        currency: "usd",
-      }}
-    >
-      <PaymentFormContent
-        customerID={customerID}
-        handlers={handlers}
-      />
-    </Elements>
+    <PaymentProviderContextProvider value={provider}>
+      <Elements
+        stripe={providerInstance}
+        options={provider.getElementsOptions()}
+      >
+        <PaymentFormContent
+          customerID={customerID}
+          provider={provider}
+          apiEndpoint={apiEndpoint}
+          handlers={handlers}
+        />
+      </Elements>
+    </PaymentProviderContextProvider>
   );
 }
 
 export function PaymentSetupPage({
   customerID,
-  stripePublishableKey,
+  provider,
+  publishableKey,
+  apiEndpoint,
   onSuccess,
   onError,
 }: PaymentSetupPageProps) {
@@ -131,7 +152,9 @@ export function PaymentSetupPage({
 
       <PaymentSetupForm
         customerID={customerID}
-        stripePublishableKey={stripePublishableKey}
+        provider={provider}
+        publishableKey={publishableKey}
+        apiEndpoint={apiEndpoint}
         handlers={{
           onSuccess,
           onError,
