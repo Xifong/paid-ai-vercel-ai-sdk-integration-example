@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/contexts/AuthContext';
-import { useCustomerCreation } from '@/app/(customer)/core/use-customer-creation';
+import { usePaidCustomer } from '@/app/(customer)/core/use-customer-creation';
 import { APPLICATION_AGENT_ID } from '@/app/constants';
 
 interface LoginFormData {
@@ -22,7 +22,7 @@ export default function Signup() {
   const router = useRouter();
   const { signup, isLoggedIn } = useAuth();
 
-  const { state: customerState, createCustomerAccount } = useCustomerCreation({
+  const { state: customerState, createCustomerAccount } = usePaidCustomer({
     agentId: APPLICATION_AGENT_ID,
     onSuccess: () => {
       router.push('/payment-setup');

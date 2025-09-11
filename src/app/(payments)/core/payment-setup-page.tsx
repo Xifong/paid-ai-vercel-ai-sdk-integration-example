@@ -134,7 +134,7 @@ export function PaymentSetupForm({
   );
 }
 
-export function PaymentSetupPage({
+export function PaidPaymentSetupPage({
   customerID,
   provider,
   publishableKey,

@@ -6,7 +6,7 @@ import { userStore } from '@/app/utils/userStore';
 import { useEffect } from 'react';
 import { StripeProvider } from '@/app/(payments)/payment-providers/stripe';
 import { PaymentResult } from '@/app/(payments)/core/types';
-import { PaymentSetupPage } from '@/app/(payments)/core/payment-setup-page';
+import { PaidPaymentSetupPage } from '@/app/(payments)/core/payment-setup-page';
 
 const STRIPE_PUBLISHABLE_KEY = 'pk_live_51S2vuU6VZ0JAwqpDJUwAOC5fbyQo4S2axB986wbh2V9zZym2WqkraGVwhNdTFkbMtrNPt8j8oXrVAKqCqzeZlzOM00ONr4knZ6';
 
@@ -37,7 +37,7 @@ export default function PaymentSetup() {
 
   return (
     isLoggedIn && userData &&
-    <PaymentSetupPage
+    <PaidPaymentSetupPage
       customerID={userData.customerId}
       publishableKey={STRIPE_PUBLISHABLE_KEY}
       provider={provider}

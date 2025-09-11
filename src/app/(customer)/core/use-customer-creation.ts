@@ -50,7 +50,7 @@ export async function createCustomer(
   return response.json();
 }
 
-export function useCustomerCreation({
+export function usePaidCustomer({
   agentId,
   orderConfig,
   onSuccess,
