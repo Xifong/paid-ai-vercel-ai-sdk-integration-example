@@ -22,7 +22,7 @@ type PaymentSetupPageProps = {
   customerID: string;
   provider: PaymentProvider;
   publishableKey: string;
-  apiEndpoint: string;
+  apiEndpoint?: string;
   onSuccess?: (result: PaymentResult) => void;
   onError?: (error: string) => void;
 }
@@ -138,7 +138,7 @@ export function PaymentSetupPage({
   customerID,
   provider,
   publishableKey,
-  apiEndpoint,
+  apiEndpoint = "/api/paid-setup-intent",
   onSuccess,
   onError,
 }: PaymentSetupPageProps) {

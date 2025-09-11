@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/contexts/AuthContext';
+import { useCustomerCreation } from '@/app/(customer)/core/use-customer-creation';
+import { APPLICATION_AGENT_ID } from '@/app/constants';
 
 interface LoginFormData {
   name: string;
@@ -10,22 +12,6 @@ interface LoginFormData {
   password: string;
 }
 
-const createCustomer = async (email: string, name: string) => {
-  const response = await fetch('/api/create-customer', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email, name }),
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to create customer');
-  }
-
-  const data = await response.json();
-  return data.customerId;
-};
 
 export default function Signup() {
   const [formData, setFormData] = useState<LoginFormData>({
@@ -33,27 +19,21 @@ export default function Signup() {
     email: '',
     password: ''
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { signup, isLoggedIn } = useAuth();
+
+  const { state: customerState, createCustomerAccount } = useCustomerCreation({
+    agentId: APPLICATION_AGENT_ID,
+    onSuccess: () => {
+      router.push('/payment-setup');
+    },
+  });
 
   useEffect(() => {
     if (isLoggedIn) {
       router.push('/');
     }
   }, []);
-
-  const handleSignup = async (formData: LoginFormData): Promise<void> => {
-    const customerId = await createCustomer(formData.email, formData.name);
-    const userData = {
-      customerId,
-      name: formData.name,
-      email: formData.email,
-      password: formData.password
-    };
-
-    await signup(userData);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,14 +42,24 @@ export default function Signup() {
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
-      await handleSignup(formData);
-      router.push('/payment-setup');
+      const result = await createCustomerAccount({
+        email: formData.email,
+        name: formData.name,
+      });
+
+      if (!result) return;
+
+      const userData = {
+        customerId: result.customerId,
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      };
+
+      await signup(userData);
     } catch (error) {
       console.error('Signup error:', error);
-      setIsSubmitting(false);
     }
   };
 
@@ -123,12 +113,18 @@ export default function Signup() {
           />
         </div>
 
+        {customerState.error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {customerState.error}
+          </div>
+        )}
+
         <button
           type="submit"
-          disabled={isSubmitting || !formData.name.trim() || !formData.email.trim() || !formData.password.trim()}
+          disabled={customerState.isCreating || !formData.name.trim() || !formData.email.trim() || !formData.password.trim()}
           className="w-full p-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? 'Signing up...' : 'Sign Up'}
+          {customerState.isCreating ? 'Signing up...' : 'Sign Up'}
         </button>
       </form>
     </div>
